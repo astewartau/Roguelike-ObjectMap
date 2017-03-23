@@ -11,16 +11,14 @@ For example, map information is often stored as a simple array of integers, or e
 The problem becomes more challenging at the next step, when we must decide how to store character and item positions. It's important to realise that characters and items are *not* actually part of the map, and can instead be thought of as a separate, dynamic layer that sits on top of a map. This is because items are picked up, characters move around, and often we want to allow many objects to exist in the same cell.
 
 ## Features and speed
-This project provides a container that can be used as an item/character layer in a fairly general way, and it should work for most roguelikes. The container features:
+This project provides a container that can be used as an item/character layer in a fairly general way, and it should work for most roguelikes. The following features all work in O(1) time:
 
-- 2D map cell access in O(1) time
-- Containment checking in log(n) time
-- Object insertion in log(k)+2log(n) time
-- Object movement by amount in ~3log(n) time
-- Object movement to known position in ~2log(n) time
-- Object position inquiry in 2log(n) time
-
-Where `k` is the number of map cells and `n` is the number of objects.
+- Map cell access
+- Containment checking
+- Object insertion
+- Object movement by amount
+- Object movement to known position
+- Object position inquiry
 
 ## Documentation and basic usage
 For detailed documentation, please see [ObjectMap.hpp](https://github.com/astewartau/Roguelike-ObjectMap/blob/master/ObjectMap.hpp).

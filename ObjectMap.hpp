@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 /// <summary>
 /// Represents a cell position on a 2D map, given by a row and column
@@ -104,16 +104,16 @@ private:
 	/// Useful for quickly checking whether an object exists
 	/// Useful for quickly getting the location of an object
 	/// </summary>
-	std::map<Object*, CellPos> _objects;
+	std::unordered_mapunordered_map<Object*, CellPos> _objects;
 };
 
-/// 
+///
 /// ObjectMap.tpp
-/// The implementation has not been separated into a .cpp file because templated 
+/// The implementation has not been separated into a .cpp file because templated
 /// functions must be implemented in header files.
-/// 
+///
 /// See http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
-/// 
+///
 #include <algorithm>
 
 template <typename Object>
