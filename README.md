@@ -1,5 +1,8 @@
 # Roguelike ObjectMap
 
+## Installation
+Just add [ObjectMap.hpp](https://github.com/astewartau/Roguelike-ObjectMap/blob/master/ObjectMap.hpp) to your project!
+
 ## Background
 When programming 2D cell-based video games, and especially roguelikes, map information can *usually* be stored using relatively simple data structures.
 
@@ -19,7 +22,7 @@ This project provides a container that can be used as an item/character layer in
 
 Where `k` is the number of map cells and `n` is the number of objects.
 
-## Documentation and basic Usage
+## Documentation and basic usage
 For detailed documentation, please see the header file `ObjectMap.hpp`.
 
 To start using the ObjectMap container, simply include it in your project.
