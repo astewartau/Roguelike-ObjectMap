@@ -23,11 +23,9 @@ This project provides a container that can be used as an item/character layer in
 Where `k` is the number of map cells and `n` is the number of objects.
 
 ## Documentation and basic usage
-For detailed documentation, please see the header file `ObjectMap.hpp`.
+For detailed documentation, please see [ObjectMap.hpp](https://github.com/astewartau/Roguelike-ObjectMap/blob/master/ObjectMap.hpp).
 
-To start using the ObjectMap container, simply include it in your project.
-
-Creating a new 50x60 `ObjectMap<Actor>` and adding a player actor to it at `(3,4)`.
+Here, we create a new 50x60 `ObjectMap<Actor>` and add a player actor to it at `(3,4)`.
 
 ```
 ObjectMap<Actor> objectMap = new ObjectMap(50, 60)
