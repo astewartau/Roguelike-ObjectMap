@@ -6,12 +6,12 @@
 /// Represents a cell position on a 2D map, given by a row and column
 /// Cells can be added together to identify other cells
 /// </summary>
-struct CellPos {
-	CellPos() { column = 0; row = 0; }
-	CellPos(unsigned int column, unsigned int row) : column(column), row(row) {}
+struct Cell {
+	Cell() { column = 0; row = 0; }
+	Cell(unsigned int column, unsigned int row) : column(column), row(row) {}
 	void Set(unsigned int column, unsigned int row) { this->column = column; this->row = row; }
-	CellPos& operator+=(const CellPos& rhs) { column += rhs.column; row += rhs.row; return *this; }
-	CellPos operator+(const CellPos& rhs) { return CellPos(column + rhs.column, row + rhs.row); }
+	Cell& operator+=(const Cell& rhs) { column += rhs.column; row += rhs.row; return *this; }
+	Cell operator+(const Cell& rhs) { return Cell(column + rhs.column, row + rhs.row); }
 	unsigned int column, row;
 };
 
@@ -27,13 +27,7 @@ public:
 	/// </summary>
 	/// <param name="columns">Number of columns or map width</param>
 	/// <param name="rows">Number of rows or map height</param>
-	ObjectMap(unsigned int columns, unsigned int rows) {
-		// Resize the 2D part of the ObjectMap so that it matches the given size
-		_map.resize(columns);
-		for (auto &it : _map) {
-			it.resize(rows);
-		}
-	}
+	ObjectMap(unsigned int columns, unsigned int rows);
 
 	/// <summary>
 	/// Gets the objects located at the given map cell
@@ -44,7 +38,7 @@ public:
 	/// A pointer to a vector of objects residing at the given cell.
 	/// Returns nullptr if there are no objects at the cell.
 	/// </returns>
-	std::vector<Object*>* At(unsigned int column, unsigned int row);
+	const std::vector<Object*>* At(unsigned int column, unsigned int row) const;
 
 	/// <summary>
 	/// Checks whether the ObjectMap contains the given object
@@ -88,23 +82,33 @@ public:
 	/// A pointer to the position of the object.
 	/// Returns nullptr if the object does not exist in the ObjectMap.
 	/// </returns>
-	CellPos* GetPosition(Object* object);
+	Cell* GetPosition(Object* object);
 private:
 	/// <summary>
-	/// A 3D container allowing object access via cell positions
+	/// The number of columns in the ObjectMap
+	/// </summary>
+	unsigned int _columns;
+
+	/// <summary>
+	/// The number of rows on the ObjectMap
+	/// </summary>
+	unsigned int _rows;
+
+	/// <summary>
+	/// A container allowing object access via cell positions
 	/// Provides the ability to iterate across sections of the map
 	/// Useful for object culling and rendering
 	/// Useful for object lookup when the position is known
 	/// Example: _map[a][b] is a vector objects positioned at the map cell (x=a,y=b)
 	/// </summary>
-	std::vector<std::vector<std::vector<Object*>>> _map;
+	std::vector<std::vector<Object*>> _tiles;
 
 	/// <summary>
 	/// A 1D container of all objects and pointers to their positions
 	/// Useful for quickly checking whether an object exists
 	/// Useful for quickly getting the location of an object
 	/// </summary>
-	std::unordered_mapunordered_map<Object*, CellPos> _objects;
+	std::unordered_map<Object*, Cell> _objects;
 };
 
 ///
@@ -117,11 +121,18 @@ private:
 #include <algorithm>
 
 template <typename Object>
-std::vector<Object*>* ObjectMap<Object>::At(unsigned int column, unsigned int row) {
+ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
+		_rows(columns), _columns(rows) {
+	// Resize the 2D part of the ObjectMap so that it matches the given size
+	_tiles.resize(columns * rows);
+}
+
+template <typename Object>
+const std::vector<Object*>* ObjectMap<Object>::At(unsigned int column, unsigned int row) const {
 	// Ensure that the given position is valid
-	if ((column < _map.size()) && (row < _map[0].size())) {
+	if ((row * _rows + column) < _tiles.size()) {
 		// Return the objects at that position
-		return &_map[column][row];
+		return &_tiles[row * _rows + column];
 	}
 	return nullptr;
 }
@@ -135,9 +146,9 @@ bool ObjectMap<Object>::Contains(Object* object) {
 template <typename Object>
 bool ObjectMap<Object>::Add(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object is not a duplicate and the position is valid
-	if (!Contains(object) && (column < _map.size()) && (row < _map[0].size())) {
-		_objects[object] = CellPos(column, row);
-		_map[column][row].push_back(object);
+	if (!Contains(object) && ((row * _rows + column) < _tiles.size())) {
+		_objects[object] = Cell(column, row);
+		_tiles[row * _rows + column].push_back(object);
 		return true;
 	}
 	return false;
@@ -146,25 +157,29 @@ bool ObjectMap<Object>::Add(Object* object, unsigned int column, unsigned int ro
 template <typename Object>
 bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 	// Given the object's position, calculate the new position
-	CellPos newPosition = _objects[object] + CellPos(columns, rows);
+	Cell newPosition = _objects[object] + Cell(columns, rows);
 
-	// Move the object to the new position
-	return MoveTo(object, newPosition.column, newPosition.row);
+	// Check that the new position is within the map bounds
+	if (newPosition.column < _rows && newPosition.row < _columns) {
+		// Move the object to the new position
+		return MoveTo(object, newPosition.column, newPosition.row);
+	}
+	return false;
 }
 
 template <typename Object>
 bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object exists and the position is valid
-	if (Contains(object) && (column < _map.size()) && (row < _map[0].size())) {
+	if (Contains(object) && ((row * _rows + column) < _tiles.size())) {
 		// Get the position reference of the object
-		CellPos* position = &_objects[object];
+		Cell* position = &_objects[object];
 
 		// Erase the object from its current position in the map
-		auto *oldTile = &_map[position->column][position->row];
+		auto *oldTile = &_tiles[position->row * _rows + position->column];
 		oldTile->erase(std::remove(oldTile->begin(), oldTile->end(), object), oldTile->end());
 
 		// Add the object to its new position on the map
-		_map[column][row].push_back(object);
+		_tiles[row * _rows + column].push_back(object);
 
 		// Set the position of the object for fast lookup
 		position->Set(column, row);
@@ -176,7 +191,7 @@ bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int
 }
 
 template <typename Object>
-CellPos* ObjectMap<Object>::GetPosition(Object* object) {
+Cell* ObjectMap<Object>::GetPosition(Object* object) {
 	// Ensure that the object is on the map
 	if (Contains(object)) {
 		return &_objects[object];

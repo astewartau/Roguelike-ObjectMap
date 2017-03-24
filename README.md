@@ -11,7 +11,7 @@ For example, map information is often stored as a simple array of integers, or e
 The problem becomes more challenging at the next step, when we must decide how to store character and item positions. It's important to realise that characters and items are *not* actually part of the map, and can instead be thought of as a separate, dynamic layer that sits on top of a map. This is because items are picked up, characters move around, and often we want to allow many objects to exist in the same cell.
 
 ## Features and speed
-This project provides a container that can be used as an item/character layer in a fairly general way, and it should work for most roguelikes. The following features all work in O(1) time:
+This project provides a container that can be used as an item/character layer in a fairly general way, and it should work for most roguelikes that use 2D grids. The following features all work in O(1) time:
 
 - Map cell access
 - Containment checking
