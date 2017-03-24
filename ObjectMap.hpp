@@ -87,12 +87,12 @@ private:
 	/// <summary>
 	/// The number of columns in the ObjectMap
 	/// </summary>
-	unsigned int COLUMNS;
+	const unsigned int COLUMNS;
 
 	/// <summary>
 	/// The number of rows on the ObjectMap
 	/// </summary>
-	unsigned int ROWS;
+	const unsigned int ROWS;
 
 	/// <summary>
 	/// A container allowing object access via cell positions
