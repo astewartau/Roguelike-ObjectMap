@@ -45,7 +45,7 @@ public:
 	/// </summary>
 	/// <param name="object">A pointer to the object to check for</param>
 	/// <returns>True if the ObjectMap contains the object</returns>
-	bool Contains(Object* object);
+	bool Contains(Object* object) const;
 
 	/// <summary>
 	/// Adds the given object to the ObjectMap at the given cell
@@ -82,17 +82,17 @@ public:
 	/// A pointer to the position of the object.
 	/// Returns nullptr if the object does not exist in the ObjectMap.
 	/// </returns>
-	Cell* GetPosition(Object* object);
+	const Cell* GetPosition(Object* object) const;
 private:
 	/// <summary>
 	/// The number of columns in the ObjectMap
 	/// </summary>
-	unsigned int _columns;
+	unsigned int COLUMNS;
 
 	/// <summary>
 	/// The number of rows on the ObjectMap
 	/// </summary>
-	unsigned int _rows;
+	unsigned int ROWS;
 
 	/// <summary>
 	/// A container allowing object access via cell positions
@@ -122,7 +122,7 @@ private:
 
 template <typename Object>
 ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
-		_rows(columns), _columns(rows) {
+		ROWS(columns), COLUMNS(rows) {
 	// Resize the 2D part of the ObjectMap so that it matches the given size
 	_tiles.resize(columns * rows);
 }
@@ -130,15 +130,15 @@ ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
 template <typename Object>
 const std::vector<Object*>* ObjectMap<Object>::At(unsigned int column, unsigned int row) const {
 	// Ensure that the given position is valid
-	if ((row * _rows + column) < _tiles.size()) {
+	if ((row * ROWS + column) < _tiles.size()) {
 		// Return the objects at that position
-		return &_tiles[row * _rows + column];
+		return &_tiles[row * ROWS + column];
 	}
 	return nullptr;
 }
 
 template <typename Object>
-bool ObjectMap<Object>::Contains(Object* object) {
+bool ObjectMap<Object>::Contains(Object* object) const {
 	// Search for the given object via the 1D container
 	return _objects.find(object) != _objects.end();
 }
@@ -146,9 +146,9 @@ bool ObjectMap<Object>::Contains(Object* object) {
 template <typename Object>
 bool ObjectMap<Object>::Add(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object is not a duplicate and the position is valid
-	if (!Contains(object) && ((row * _rows + column) < _tiles.size())) {
+	if (!Contains(object) && ((row * ROWS + column) < _tiles.size())) {
 		_objects[object] = Cell(column, row);
-		_tiles[row * _rows + column].push_back(object);
+		_tiles[row * ROWS + column].push_back(object);
 		return true;
 	}
 	return false;
@@ -160,7 +160,7 @@ bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 	Cell newPosition = _objects[object] + Cell(columns, rows);
 
 	// Check that the new position is within the map bounds
-	if (newPosition.column < _rows && newPosition.row < _columns) {
+	if (newPosition.column < ROWS && newPosition.row < COLUMNS) {
 		// Move the object to the new position
 		return MoveTo(object, newPosition.column, newPosition.row);
 	}
@@ -170,16 +170,16 @@ bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 template <typename Object>
 bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object exists and the position is valid
-	if (Contains(object) && ((row * _rows + column) < _tiles.size())) {
+	if (Contains(object) && ((row * ROWS + column) < _tiles.size())) {
 		// Get the position reference of the object
 		Cell* position = &_objects[object];
 
 		// Erase the object from its current position in the map
-		auto *oldTile = &_tiles[position->row * _rows + position->column];
+		auto *oldTile = &_tiles[position->row * ROWS + position->column];
 		oldTile->erase(std::remove(oldTile->begin(), oldTile->end(), object), oldTile->end());
 
 		// Add the object to its new position on the map
-		_tiles[row * _rows + column].push_back(object);
+		_tiles[row * ROWS + column].push_back(object);
 
 		// Set the position of the object for fast lookup
 		position->Set(column, row);
@@ -191,10 +191,10 @@ bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int
 }
 
 template <typename Object>
-Cell* ObjectMap<Object>::GetPosition(Object* object) {
+const Cell* ObjectMap<Object>::GetPosition(Object* object) const {
 	// Ensure that the object is on the map
 	if (Contains(object)) {
-		return &_objects[object];
+		return &_objects.at(object);
 	}
 	return nullptr;
 }
