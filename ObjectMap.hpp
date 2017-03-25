@@ -129,7 +129,7 @@ public:
 /// See http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
 ///
 #include <algorithm>
-#include <iostream>
+
 template <typename Object>
 ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
 	_ROWS(columns), _COLUMNS(rows) {
