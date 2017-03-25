@@ -132,7 +132,7 @@ public:
 
 template <typename Object>
 ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
-	_ROWS(columns), _COLUMNS(rows) {
+	_ROWS(rows), _COLUMNS(columns) {
 
 	if (columns == 0 || rows == 0) {
 		throw ObjectMapException("Invalid number of rows or columns");
@@ -151,7 +151,7 @@ const std::vector<Object*>* ObjectMap<Object>::At(unsigned int column, unsigned 
 	// Ensure that the given position is valid
 	if (column < _COLUMNS && row < _ROWS) {
 		// Return the objects at that position
-		return &_tiles[row * _ROWS + column];
+		return &_tiles[row * _COLUMNS + column];
 	}
 	return nullptr;
 }
@@ -167,7 +167,7 @@ bool ObjectMap<Object>::Add(Object* object, unsigned int column, unsigned int ro
 	// Ensure that the object is not a duplicate and the position is valid
 	if (!Contains(object) && (column < _COLUMNS && row < _ROWS)) {
 		_objects[object] = Cell(column, row);
-		_tiles[row * _ROWS + column].push_back(object);
+		_tiles[row * _COLUMNS + column].push_back(object);
 		return true;
 	}
 	return false;
@@ -179,7 +179,7 @@ bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 	Cell newPosition = _objects[object] + Cell(columns, rows);
 
 	// Check that the new position is within the map bounds
-	if (newPosition.column < _ROWS && newPosition.row < _COLUMNS) {
+	if (newPosition.column < _COLUMNS && newPosition.row < _ROWS) { // TODO
 		// Move the object to the new position
 		return MoveTo(object, newPosition.column, newPosition.row);
 	}
@@ -194,11 +194,11 @@ bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int
 		Cell* position = &_objects[object];
 
 		// Erase the object from its current position in the map
-		auto *oldTile = &_tiles[position->row * _ROWS + position->column];
+		auto *oldTile = &_tiles[position->row * _COLUMNS + position->column];
 		oldTile->erase(std::remove(oldTile->begin(), oldTile->end(), object), oldTile->end());
 
 		// Add the object to its new position on the map
-		_tiles[row * _ROWS + column].push_back(object);
+		_tiles[row * _COLUMNS + column].push_back(object);
 
 		// Set the position of the object for fast lookup
 		position->Set(column, row);
