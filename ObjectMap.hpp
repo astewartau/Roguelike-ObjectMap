@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 /// <summary>
 /// Represents a cell position on a 2D map, given by a row and column
@@ -87,12 +88,12 @@ private:
 	/// <summary>
 	/// The number of columns in the ObjectMap
 	/// </summary>
-	const unsigned int COLUMNS;
+	const unsigned int _COLUMNS;
 
 	/// <summary>
 	/// The number of rows on the ObjectMap
 	/// </summary>
-	const unsigned int ROWS;
+	const unsigned int _ROWS;
 
 	/// <summary>
 	/// A container allowing object access via cell positions
@@ -111,6 +112,15 @@ private:
 	std::unordered_map<Object*, Cell> _objects;
 };
 
+/// <summary>
+/// Custom exception class for ObjectMap runtime errors
+/// </summary>
+class ObjectMapException : public std::runtime_error {
+public:
+	ObjectMapException(std::string message)
+		: runtime_error("ObjectMapException: " + message) {}
+};
+
 ///
 /// ObjectMap.tpp
 /// The implementation has not been separated into a .cpp file because templated
@@ -119,20 +129,29 @@ private:
 /// See http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
 ///
 #include <algorithm>
-
+#include <iostream>
 template <typename Object>
 ObjectMap<Object>::ObjectMap(unsigned int columns, unsigned int rows) :
-		ROWS(columns), COLUMNS(rows) {
-	// Resize the 2D part of the ObjectMap so that it matches the given size
-	_tiles.resize(columns * rows);
+	_ROWS(columns), _COLUMNS(rows) {
+
+	if (columns == 0 || rows == 0) {
+		throw ObjectMapException("Invalid number of rows or columns");
+	} else {
+		if (rows * columns <= (_tiles.max_size() / sizeof(std::vector<Object*>))) {
+			// Resize the 2D part of the ObjectMap so that it matches the given size
+			_tiles.resize(columns * rows);
+		} else {
+			throw ObjectMapException("Number of map cells exceeds the maximum allowed");
+		}
+	}
 }
 
 template <typename Object>
 const std::vector<Object*>* ObjectMap<Object>::At(unsigned int column, unsigned int row) const {
 	// Ensure that the given position is valid
-	if ((row * ROWS + column) < _tiles.size()) {
+	if (column < _COLUMNS && row < _ROWS) {
 		// Return the objects at that position
-		return &_tiles[row * ROWS + column];
+		return &_tiles[row * _ROWS + column];
 	}
 	return nullptr;
 }
@@ -146,9 +165,9 @@ bool ObjectMap<Object>::Contains(Object* object) const {
 template <typename Object>
 bool ObjectMap<Object>::Add(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object is not a duplicate and the position is valid
-	if (!Contains(object) && ((row * ROWS + column) < _tiles.size())) {
+	if (!Contains(object) && (column < _COLUMNS && row < _ROWS)) {
 		_objects[object] = Cell(column, row);
-		_tiles[row * ROWS + column].push_back(object);
+		_tiles[row * _ROWS + column].push_back(object);
 		return true;
 	}
 	return false;
@@ -160,7 +179,7 @@ bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 	Cell newPosition = _objects[object] + Cell(columns, rows);
 
 	// Check that the new position is within the map bounds
-	if (newPosition.column < ROWS && newPosition.row < COLUMNS) {
+	if (newPosition.column < _ROWS && newPosition.row < _COLUMNS) {
 		// Move the object to the new position
 		return MoveTo(object, newPosition.column, newPosition.row);
 	}
@@ -170,23 +189,22 @@ bool ObjectMap<Object>::MoveBy(Object* object, int columns, int rows) {
 template <typename Object>
 bool ObjectMap<Object>::MoveTo(Object* object, unsigned int column, unsigned int row) {
 	// Ensure that the object exists and the position is valid
-	if (Contains(object) && ((row * ROWS + column) < _tiles.size())) {
+	if (Contains(object) && (column < _COLUMNS && row < _ROWS)) {
 		// Get the position reference of the object
 		Cell* position = &_objects[object];
 
 		// Erase the object from its current position in the map
-		auto *oldTile = &_tiles[position->row * ROWS + position->column];
+		auto *oldTile = &_tiles[position->row * _ROWS + position->column];
 		oldTile->erase(std::remove(oldTile->begin(), oldTile->end(), object), oldTile->end());
 
 		// Add the object to its new position on the map
-		_tiles[row * ROWS + column].push_back(object);
+		_tiles[row * _ROWS + column].push_back(object);
 
 		// Set the position of the object for fast lookup
 		position->Set(column, row);
 
 		return true;
 	}
-
 	return false;
 }
 
