@@ -6,7 +6,7 @@ Just add [ObjectMap.hpp](https://github.com/astewartau/Roguelike-ObjectMap/blob/
 ## Background
 When programming 2D cell-based video games, and especially roguelikes, map information can *usually* be stored using relatively simple data structures.
 
-For example, map information is often stored as a simple array of integers, or even an array of booleans. A value of `1` or `True` might mean a cell contains a wall, and a value of `0` or `False` might mean the cell is empty. Of course, more integer values could be used to checked for more terrain types. Often, if the game is more complicated, a custom `Tile` object with more properties could be used in place of integers.
+For example, map information is often stored as a simple array of integers, or even an array of booleans. A value of `1` or `True` might mean a cell contains a wall, and a value of `0` or `False` might mean the cell is empty. Of course, more integer values could be used to check for more terrain types. Often, if a game is more complicated, a custom `Tile` object with more properties could be used in place of integers.
 
 The problem becomes more challenging at the next step, when we must decide how to store character and item positions. It's important to realise that characters and items are *not* actually part of the map, and can instead be thought of as a separate, dynamic layer that sits on top of a map. This is because items are picked up, characters move around, and often we want to allow many objects to exist in the same cell.
 
